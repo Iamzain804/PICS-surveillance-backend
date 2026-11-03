@@ -1,0 +1,70 @@
+# ─────────────────────────────────────────────────────────────
+# EPIC AI Surveillance Pipeline - GPU Requirements
+# Python 3.11 | CUDA 12.4 (compatible with driver 591.86 / CUDA 13.1)
+# ─────────────────────────────────────────────────────────────
+# INSTALL ORDER:
+#   Step 1: pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+#   Step 2: pip install -r requirements.txt
+# ─────────────────────────────────────────────────────────────
+
+# Core PyTorch (GPU / CUDA 12.4)
+--extra-index-url https://download.pytorch.org/whl/cu124
+torch
+torchvision
+
+# Web Framework
+fastapi
+uvicorn[standard]
+
+# Database
+sqlalchemy
+bcrypt
+psycopg2-binary
+alembic
+
+# Data Validation
+pydantic
+
+# Authentication & Security
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+
+# Environment & Config
+python-dotenv
+pyyaml
+
+# Excel Report Generation
+openpyxl
+
+# HTTP Client
+requests
+httpx
+
+# Date Utilities
+python-dateutil
+
+# Scientific / Numerical
+numpy
+scipy
+
+# Computer Vision
+opencv-python-headless
+pillow
+
+# YOLO Object Detection (GPU)
+ultralytics
+
+# Face Recognition (CUDA ONNX)
+insightface
+onnxruntime-gpu
+
+# OCR
+easyocr
+
+# Hardware Video Decoding (PyAV)
+av
+
+# Task Queue
+celery
+redis

@@ -1,0 +1,130 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# EPIC AI Surveillance Pipeline — Centralised Configuration
+# ═══════════════════════════════════════════════════════════════════════════
+# All thresholds, paths, and operational settings in one place.
+# Values here are defaults; environment variables ALWAYS take precedence.
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ─── Database ─────────────────────────────────────────────────────────────
+database:
+  url: "postgresql://postgres:1234@localhost:5432/epic_surveillance"
+
+# ─── API Server ───────────────────────────────────────────────────────────
+api:
+  host: "0.0.0.0"
+  port: 8000
+  reload: true
+  workers: 1                       # Uvicorn workers (production: 4)
+
+# ─── Auto Pipeline Watcher ────────────────────────────────────────────────
+watcher:
+  poll_interval_seconds: 30
+  camera_roles:
+    - attendance
+    - checkin
+    - checkout
+    - breakin
+    - breakout
+  supported_extensions:
+    - .mp4
+    - .avi
+    - .mov
+    - .mkv
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+
+# ─── YOLO Object Detection ───────────────────────────────────────────────
+yolo:
+  engine_path: "models/yolov8n.engine"    # TensorRT FP16 (preferred)
+  model_path: "models/yolov8n.pt"         # PyTorch fallback
+  person_class_id: 0
+  confidence_threshold: 0.25              # ⬇ Lowered from 0.40 for max person capture
+
+# ─── Face Recognition ────────────────────────────────────────────────────
+# NOTE: recognition_threshold, margin_threshold, ambiguous_upper, ambiguous_lower,
+# and max_face_samples_lock below are NOT currently read by the matching logic in
+# pipeline/pipeline.py -- they predate this config system and were declared here
+# without the corresponding code ever being wired up to them (discovered during the
+# Objective 2 refactor, preserved as-is rather than silently repurposed). The knobs
+# the pipeline actually uses are recognition_lock_threshold, ambiguous_threshold,
+# ambiguous_margin, and ambiguous_display_threshold below, whose defaults match the
+# literal values that were previously hardcoded inline.
+face_recognition:
+  encodings_pkl_path: "ai/encoding/encodings.pkl"
+  recognition_threshold: 0.42             # declared, not consulted -- see note above
+  margin_threshold: 0.05                  # declared, not consulted -- see note above
+  ambiguous_upper: 0.50                   # declared, not consulted -- see note above
+  ambiguous_lower: 0.40                   # declared, not consulted -- see note above
+  max_face_samples_lock: 8               # declared, not consulted -- see note above
+  max_face_attempts_lock: 15             # ⬆ Raised from 10 — more chances before giving up
+  recognition_lock_threshold: 0.44        # actual lock-in similarity threshold
+  ambiguous_threshold: 0.40                # actual ambiguous-vote floor
+  ambiguous_margin: 0.03                   # actual top1/top2 margin below which a match is "ambiguous"
+  ambiguous_display_threshold: 0.42        # min similarity to list a candidate name on an ambiguous event
+  quality_gate:
+    min_face_width_px: 40                 # ⬇ Lowered from 80 — catch distant CCTV faces
+    min_interocular_distance_px: 25       # ⬇ Lowered from 60 — catch distant faces
+    max_yaw_degrees: 40.0                 # ⬆ Raised from 25 — handle real CCTV angles
+    max_pitch_degrees: 35.0               # ⬆ Raised from 20 — handle tilted heads
+  active_learning_weight: 0.85            # Weight for manual review corrections
+
+# ─── Frame Sampling ──────────────────────────────────────────────────────
+sampling:
+  frame_sample_interval: 1               # Continuous tracking on motion frames
+
+# ─── Motion Gating ───────────────────────────────────────────────────────
+motion_gating:
+  enabled: true
+  threshold_ratio: 0.01                  # 1% pixel change triggers inference
+  pixel_diff_threshold: 25               # Absolute intensity difference (0-255)
+  downscale_size: [160, 120]
+  track_lost_max_frames: 80              # ⬆ Raised from 50 — keep bounding boxes visible longer
+  post_detection_stale_frames: 30        # separate stale-track window used right after a YOLO detection pass
+                                          # (pre-existing inconsistency: this is intentionally different from
+                                          # track_lost_max_frames above rather than unified, to avoid changing
+                                          # behavior during the Objective 2 refactor -- see pipeline/tracker.py)
+
+# ─── Video Output ────────────────────────────────────────────────────────
+video_output:
+  save_annotated_video: false             # ⚡ Option B: Fast Event-Driven Mode (30s per video)
+
+# ─── Decoder ─────────────────────────────────────────────────────────────
+decoder:
+  queue_size: 6                          # PrefetchedGPUVideoDecoder / SmartVideoDecoder prefetch queue depth
+  enable_async_decode: true              # reserved for a future synchronous-decode fallback toggle
+  enable_tensorrt: true                  # reserved for a future force-PyTorch toggle (TensorRT is auto-detected today)
+
+# ─── Attendance ──────────────────────────────────────────────────────────
+attendance:
+  cooldown_seconds: 30.0                 # min seconds between alternating check-in/check-out events per employee
+
+# ─── OCR Timestamp Drift Correction ─────────────────────────────────────
+ocr_drift:
+  enabled: true
+  interval_minutes: 30                   # Re-read burnt-in timestamp every N min
+
+# ─── Checkpoint / Resume ─────────────────────────────────────────────────
+checkpoint:
+  enabled: true
+  interval_frames: 9000                  # ~6 min at 25 FPS effective
+  merge_tool: "ffmpeg"                   # Used for segment concatenation
+
+# ─── Parallel Chunk Processing ───────────────────────────────────────────
+parallel:
+  default_chunks: 4
+  overlap_seconds: 30
+  dedup_window_seconds: 35
+  gpu_ids: [0]                           # Multi-GPU: [0, 1, 2, 3]
+
+# ─── SMTP (Password Reset Emails) ───────────────────────────────────────
+smtp:
+  server: "email-smtp.us-east-1.amazonaws.com"
+  port: 587
+  username: ""                           # Set via SMTP_USERNAME env var
+  password: ""                           # Set via SMTP_PASSWORD env var
+  sender: "noreply@synavos.com"
+
+# ─── Logging ─────────────────────────────────────────────────────────────
+logging:
+  level: "INFO"
+  auto_pipeline_log: "auto_pipeline.log"

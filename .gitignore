@@ -1,0 +1,75 @@
+# ─── Python Bytecode & Cache ──────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# ─── Virtual Environments ─────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ─── Environment Variables & Credentials ──────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ─── Database & Local Storage ─────────────────────────────────────────
+*.sqlite3
+*.db
+
+# ─── Surveillance Data & Customer Recordings (CRITICAL EXCLUSIONS) ────
+data/raw/
+data/processed/
+data/event_crops/
+data/review_crops/
+data/profile_pictures/
+data/registration_videos/
+uploads/
+videos/
+Staff_Folders/
+*.mp4
+*.avi
+*.mkv
+*.mov
+*.h264
+*.hevc
+
+# ─── Generated Reports & Excel Exports ────────────────────────────────
+Report_*.xlsx
+*.xlsx
+*.xls
+*.csv
+*.zip
+
+# ─── Biometric Data & Checkpoint Dumps ────────────────────────────────
+ai/encoding/*.backup*
+*.pkl.backup*
+*checkpoint.json
+*parts.txt
+
+# ─── Hardware-Specific TensorRT Compiled Engines ───────────────────────
+# (.engine files are compiled specifically for local GPU architecture)
+*.engine
+
+# ─── Logs & Performance Audits ────────────────────────────────────────
+logs/
+*.log
+ab_benchmark_results.json
+performance_audit_*.json
+
+# ─── IDE & Editor Metadata ────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ─── Operating System Files ───────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini

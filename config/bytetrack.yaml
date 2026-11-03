@@ -1,0 +1,8 @@
+# Custom Optimized ByteTrack Configuration for CCTV Fast Motion & Occlusions
+tracker_type: bytetrack
+track_high_thresh: 0.25  # High confidence detection threshold for 1st stage association (catches fast moving/blurred persons)
+track_low_thresh: 0.05   # Low confidence detection threshold for 2nd stage association
+new_track_thresh: 0.30   # Threshold to initialize new tracks
+track_buffer: 120        # Keep lost tracks active for 120 frames (~4.8 seconds) to prevent track ID fragmentation
+match_thresh: 0.45       # Lower IoU match threshold for fast-moving subjects walking past camera
+fuse_score: True         # Fuse detection confidence scores with IoU calculation
